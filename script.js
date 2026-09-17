@@ -23,7 +23,113 @@ document.addEventListener('DOMContentLoaded', () => {
     // 검색어 입력(텍스트) 및 분야(드롭다운) 변경 이벤트 리스너 추가
     document.getElementById('search-input').addEventListener('input', applyFilters);
     document.getElementById('category-filter').addEventListener('change', applyFilters);
+
+    initNewsWidget();
 });
+
+const NEWS_FEED_API = 'https://api.rss2json.com/v1/api.json?rss_url=';
+let currentNewsQuery = '디지털 정부';
+
+function initNewsWidget() {
+    const topicButtons = document.querySelectorAll('.news-topic');
+
+    topicButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            topicButtons.forEach(item => {
+                const selected = item === button;
+                item.classList.toggle('active', selected);
+                item.setAttribute('aria-pressed', selected.toString());
+            });
+
+            currentNewsQuery = button.dataset.query;
+            loadLatestNews(currentNewsQuery);
+        });
+    });
+
+    document.getElementById('news-refresh').addEventListener('click', () => {
+        loadLatestNews(currentNewsQuery, true);
+    });
+
+    loadLatestNews(currentNewsQuery);
+}
+
+async function loadLatestNews(query, forceRefresh = false) {
+    const status = document.getElementById('news-status');
+    const list = document.getElementById('news-list');
+    const refreshButton = document.getElementById('news-refresh');
+    const moreLink = document.getElementById('news-more');
+    const newsSearchUrl = `https://www.bing.com/news/search?q=${encodeURIComponent(query)}&setlang=ko-kr`;
+    const rssUrl = `${newsSearchUrl}&format=rss`;
+
+    moreLink.href = newsSearchUrl;
+    status.textContent = '최신 뉴스를 불러오는 중입니다.';
+    status.classList.remove('hidden');
+    list.replaceChildren();
+    refreshButton.disabled = true;
+
+    try {
+        const cacheBuster = forceRefresh ? `&_=${Date.now()}` : '';
+        const response = await fetch(`${NEWS_FEED_API}${encodeURIComponent(rssUrl)}${cacheBuster}`);
+        if (!response.ok) throw new Error(`뉴스 응답 오류: ${response.status}`);
+
+        const feed = await response.json();
+        if (feed.status !== 'ok' || !Array.isArray(feed.items) || feed.items.length === 0) {
+            throw new Error('표시할 뉴스가 없습니다.');
+        }
+
+        renderNewsItems(feed.items.slice(0, 6));
+        status.classList.add('hidden');
+    } catch (error) {
+        console.error('뉴스 로딩 중 오류 발생:', error);
+        status.innerHTML = `뉴스 목록을 불러오지 못했습니다. <a href="${newsSearchUrl}" target="_blank" rel="noopener noreferrer">뉴스 검색에서 바로 보기</a>`;
+    } finally {
+        refreshButton.disabled = false;
+    }
+}
+
+function renderNewsItems(items) {
+    const list = document.getElementById('news-list');
+    const fragment = document.createDocumentFragment();
+
+    items.forEach(item => {
+        const article = document.createElement('article');
+        const link = document.createElement('a');
+        const title = document.createElement('h3');
+        const meta = document.createElement('p');
+        const source = document.createElement('span');
+        const published = document.createElement('span');
+        const titleParts = item.title.split(' - ');
+
+        article.className = 'news-item';
+        link.href = item.link.replace('http://www.bing.com/', 'https://www.bing.com/');
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        title.className = 'news-item-title';
+        title.textContent = titleParts.slice(0, -1).join(' - ') || item.title;
+        meta.className = 'news-item-meta';
+        source.textContent = item.author || titleParts.at(-1) || '언론사';
+        published.textContent = formatNewsDate(item.pubDate);
+
+        meta.append(source, published);
+        link.append(title, meta);
+        article.appendChild(link);
+        fragment.appendChild(article);
+    });
+
+    list.replaceChildren(fragment);
+}
+
+function formatNewsDate(dateString) {
+    const publishedDate = new Date(dateString.replace(' ', 'T') + 'Z');
+    if (Number.isNaN(publishedDate.getTime())) return '최근';
+
+    const elapsedMinutes = Math.max(0, Math.floor((Date.now() - publishedDate.getTime()) / 60000));
+    if (elapsedMinutes < 60) return `${elapsedMinutes || 1}분 전`;
+    if (elapsedMinutes < 1440) return `${Math.floor(elapsedMinutes / 60)}시간 전`;
+    if (elapsedMinutes < 10080) return `${Math.floor(elapsedMinutes / 1440)}일 전`;
+
+    return new Intl.DateTimeFormat('ko-KR', { month: 'short', day: 'numeric' }).format(publishedDate);
+}
 
 // 집계표 렌더링 함수
 function renderSummary(data) {
