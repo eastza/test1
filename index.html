@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>디지털혁신 사업계획 대시보드</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>디지털혁신 사업계획 대시보드</h1>
+            <p>2026년 공공분야 디지털 혁신 및 정보보안 사업 개요</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- 분야별 집계표 섹션 -->
+        <section class="summary-section">
+            <div class="section-header">
+                <h2>📊 분야별 요약 집계</h2>
+            </div>
+            <div id="summary-container" class="table-responsive">
+                <!-- 집계표가 여기에 렌더링됩니다 -->
+            </div>
+        </section>
+
+        <!-- 검색 및 필터 컨트롤 섹션 (개선됨: 분야 필터 드롭다운 추가) -->
+        <section class="controls-section">
+            <div class="filter-group">
+                <!-- 분야 선택 드롭다운 -->
+                <select id="category-filter" class="filter-select">
+                    <option value="">전체 분야</option>
+                    <option value="디지털전환">디지털전환</option>
+                    <option value="정보보안">정보보안</option>
+                    <option value="데이터">데이터</option>
+                    <option value="기타">기타</option>
+                </select>
+                
+                <!-- 사업명 검색 입력창 -->
+                <div class="search-box">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="search-input" placeholder="사업명 검색...">
+                </div>
+            </div>
+            
+            <!-- 결과 건수 표시 -->
+            <div class="result-info">
+                <span id="result-count" class="badge">검색 결과: 0건</span>
+            </div>
+        </section>
+
+        <!-- 사업 카드 그리드 섹션 -->
+        <section class="cards-section">
+            <div id="cards-container" class="cards-grid">
+                <!-- 카드가 여기에 렌더링됩니다 -->
+            </div>
+            <div id="no-result" class="no-result hidden">
+                <p>조건에 맞는 검색 결과가 없습니다.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 디지털혁신 사업계획 대시보드. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
